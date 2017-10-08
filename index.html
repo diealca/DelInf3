@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Delitos Informaticos</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="hom3/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/heroic-features.css" rel="stylesheet">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+  <style>
+
+      #linechart {
+         margin: 0 auto;
+
+      }
+
+      .overlay {
+        fill: none;
+        pointer-events: all;
+      }
+
+      text {
+        font-size: 10px;
+        font-family: sans-serif;
+      }
+
+      #date-text{
+        font-size: 16px;
+        font-weight: bold;
+        font-style: italic;
+      }
+      .legend-text-s{
+        color:red;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">Delitos Cibernéticos 2015</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Github Reporsitory
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+
+      <!-- Jumbotron Header -->
+      <header class="jumbotron my-4">
+        <h3 class="">¿Ha funcionado la ley de delitos informáticos en Colombia?</h3>
+        <p class="lead">Mientras se tramitan los posibles cambios de la ley 1273 de delitos informáticos en el congreso, los datos muestran que lso delitos que mas se denuncian son aquellos que ya hacían parte de la ley colombiana y que simplemente se utilizaron medios digitales para cometerlos; sin embargo los que realmente pueden ser delitos informáticos como el acceso abusivo, el uso de software malicioso o la suplantación de sitios web son poco denunciados o simplemente se castiga el objetivo final que termina siendo una transferencia o un hurto</p>
+        
+      </header>
+
+      <!-- Page Features -->
+      <div class="row text-center">
+
+        <div class="col-lg-8 col-md-6 mb-4">
+          <div id="linechart"></div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div id="pdesc"></div>
+        </div>
+
+        
+
+      </div>
+      <!-- /.row -->
+
+    </div>
+    <!-- /.container -->
+
+    <!-- Footer -->
+    <footer class="py-5 bg-dark">
+      <div class="container">
+        <p class="m-0 text-center text-white">alefro77</p>
+      </div>
+      <!-- /.container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="hom3/jquery/jquery.min.js"></script>
+    <script src="hom3/popper/popper.min.js"></script>
+    <script src="hom3/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+    
+    function num(max) {
+      return Math.abs(Math.floor(Math.random() * max) + (max - 200));
+    }
+  
+    var data = [];
+  
+    d3.csv("newdc.csv", function(d) {
+
+      var arr = {}, data = []; dels = {};
+        d.forEach(function(ds){
+          if(!arr[ds["FECHA"]]) arr[ds["FECHA"]] = {"mes": ds["mes"], "dia": ds["dia"]};
+          if(!arr[ds["FECHA"]][ds["DELITO"]]) arr[ds["FECHA"]][ds["DELITO"]] = 0;
+          arr[ds["FECHA"]][ds["DELITO"]]++;
+          if(!dels[ds["DELITO"]]) dels[ds["DELITO"]] = ds["NOMDEL"];
+        })
+
+      
+        for (var i in arr){
+          var ob = {"date": new Date(2015, arr[i].mes, arr[i].dia)};
+            for(var t in dels){
+              ob[t]= (arr[i][t])? arr[i][t]: 0;
+            }
+          data.push(ob);
+        }
+
+        
+   
+    var svg = d3.select('#linechart').append('svg').attr('height', '600px').attr('width', $("#linechart").width());
+    var svg2 = d3.select("#pdesc").append('svg').attr('height', '600px').attr('width', $("#pdesc").width())
+    var xExtent = ["2015,0,01", "2015,11,31"];
+
+    var yValues = [];
+
+    data.forEach(function(d) {
+      for (key in d) {
+        if (key !== 'date') {
+          yValues.push(d[key]);
+        }
+      } 
+    });
+
+
+    var yMin = d3.min(yValues, function(d, i) { return d; });
+    var yMax = d3.max(yValues, function(d, i) { return d; });
+
+    var xOrigScale = d3.scaleTime()
+      .domain([ new Date(2015,0,01), new Date(2015,11,31)])
+      .range([40,$("#linechart").width()]);
+
+
+    var xScale = xOrigScale.copy();
+
+    var yScale = d3.scaleLinear()
+      .domain([yMin, yMax])
+      .range([500,2]);
+
+
+    var xAxis = d3.axisBottom(xScale).ticks(6);
+    var yAxis = d3.axisLeft(yScale);
+
+    var xAxisG = svg.append('g')
+      .attr('id', 'xAxisG')
+      .attr('transform', 'translate(0,500)')
+      .call(xAxis);
+
+    var yAxisG = svg.append('g')
+      .attr('id', 'yAxisG')
+      .attr('transform', 'translate(40,0)')
+      .call(yAxis)
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", "0.71em")
+      .attr("fill", "#000")
+      .text("Delitos");
+
+
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var linesG = svg.append('g');
+
+    var legend = svg2.append('g')
+      .attr('id', 'legend')
+      
+
+
+    var dateText = legend.append('text')
+      .attr('id', 'date-text')
+      .attr('class', 'legend-text')
+      .attr('x', 0)
+      .attr('y', 20);
+
+    var lines = {};
+    var paths = {};
+    var index = Object.keys(data[0]).length - 1;
+
+
+    for (key in data[0]) {
+
+      if (key !== 'date') {
+        
+        var line = d3.line()
+          .x(function(d) {
+
+            return xScale(d.date);
+          })
+          .y(function(d) {
+
+            return yScale(d[key]);
+          })
+          .curve(d3.curveCatmullRom.alpha(0.5));
+
+        lines[key] = line;
+        path = linesG.append('path')
+          .attr('d', line(data))
+          .attr('id', key)
+          .attr('fill', 'none')
+          .attr('stroke', function(d) { return color(key); })
+          .attr('stroke-width', 2);
+
+        var totalLength = path.node().getTotalLength();
+
+        path
+          .attr('stroke-dasharray', totalLength + ' ' + totalLength)
+          .attr('stroke-dashoffset', totalLength)
+          .transition()
+          .duration(2000)
+            .ease(d3.easeCubicInOut)
+          .attr('stroke-dashoffset', 0);
+
+        paths[key] = path;
+
+
+        legend.append('rect')
+          .attr('class', 'legend-text')
+          .attr('fill', color(key))
+          .attr('x', 0)
+          .attr('height', 20)
+          .attr('width', 20)
+          .attr('y', function() {
+            return 40 * index + 70;
+          })
+
+        legend.append('text')
+          .text(dels[key])
+          .attr('id', 'text' + key)
+          .attr('class', 'legend-text-s')
+          .attr('x', 25)
+          .attr('y', function() {
+            return 40 * index + 80;
+          })
+
+          legend.append('text')
+          .attr('id', 'text2' + key)
+          .attr('class', 'legend-text-s')
+          .attr('x', 25)
+          .attr('y', function() {
+            return 40 * index + 90;
+          })
+
+        index--;
+      }
+    }
+
+    var clipPath = svg.append('clipPath')
+        .attr('id', 'clip')
+        .append('rect')
+        .attr('x', 40)
+        .attr('y', 0)
+        .attr('height', 540)
+        .attr('width', $("#linechart").width());
+
+    var focus = svg.append('g')
+      .attr('class', 'focus')
+      .style('display', 'none');
+
+    focus.append('line')
+      .attr('id', 'dotted-line')
+      .attr('x1', 0)
+      .attr('y1', 0)
+      .attr('x2', 0)
+      .attr('y2', 500)
+      .attr('stroke', 'black')
+      .attr('stroke-dasharray', '1, 2');
+
+
+    svg.append("rect")
+      .attr("class", "overlay")
+      .attr("width", $("#linechart").width())
+      .attr("height", 520)
+      .on("mouseout", function() { 
+        focus.style('display', 'none');
+        legend
+          .transition()
+          .duration(100)
+      })
+      .on("mousemove", mousemove)
+      .style('cursor', 'move')
+      .attr('clip-path', 'url(#clip)');
+
+
+    var zoom = d3.zoom()
+        .scaleExtent([1, 10])
+        .on('zoom', zoomed);
+
+    svg.call(zoom);
+
+    function zoomed() {
+
+
+      xScale = d3.event.transform.rescaleX(xOrigScale);
+
+      xAxisG.call(xAxis.scale(d3.event.transform.rescaleX(xOrigScale)));
+
+      for (key in data[0]) {
+          if (key !== 'date') {
+
+            line = lines[key];
+            path = paths[key];
+
+            totalLength = path.node().getTotalLength();
+
+            path
+              .attr('stroke-dasharray', totalLength + ' ' + totalLength)
+              .attr('stroke-dashoffset', totalLength)
+              .attr('stroke-dashoffset', 0);
+
+            path.attr('d', line(data));
+            path.attr('clip-path', 'url(#clip)');
+
+          }
+        }
+
+    }
+
+
+    var bisectDate = d3.bisector(function(d) { return new Date(d.date); }).left;
+
+    function mousemove() {
+      var x = d3.mouse(this)[0];
+
+
+      var x0 = xScale.invert(d3.mouse(this)[0]),
+        i = bisectDate(data, x0, 1),
+        d0 = data[i - 1],
+        d1 = data[i],
+        d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+
+
+      focus.style('display', 'block');
+      dateText.style('display', 'block');
+      legend
+        .transition()
+        .duration(90)
+
+      focus.attr("transform", "translate(" + xScale( new Date(d.date)) + ",0)");
+
+      var date = d.date;
+      date = date.toUTCString().split(' ');
+      date = date[0] + ' ' + date[1] + ' ' + date[2] + ' ' + date[3];
+
+      dateText.text(date);
+
+      for (key in data[0]) {
+          var newText = dels[key] + ": " + Number(d[key]).toLocaleString();
+          if (key !== 'date') {
+            $('#text' + key).html(newText.substring(0,50))
+            $('#text2' + key).html(newText.substring(50,100))
+          }
+      }
+    }
+
+  });
+
+  </script>
+  </body>
+
+</html>
