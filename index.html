@@ -8,7 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-
+    <!--Code review - Diego Castro
+    Una sugerencia para la descripción de tu pagina, además de algunos keyword para la identificación de la misma
+    -->
+    <meta name="description" content="Delitos informáticos en Colombia">
+    <meta name="keywords" content="Delitos, informática, Colombia">
     <title>Delitos Informaticos</title>
 
     <!-- Bootstrap core CSS -->
@@ -420,7 +424,9 @@
 
   
   //------------------------------------
-
+<!-- Code review - Diego Castro
+Ten cuidada puesto que se esta violando el principio de expresividad al tratar los meses como dato categoricos
+-->
   function drawCircos(d) {
    var months = [
       { "len": 31, "color": "#8dd3c7", "label": "Enero", "id": "january" },
@@ -522,7 +528,9 @@
 d3.queue()
   .defer(d3.csv, 'newdc.csv')
   .await(drawEvery)
-
+<!-- Code review - Diego Castro
+Felicitaciones, me parece un muy buen trabajo
+-->
 
   </script>
   </body>
